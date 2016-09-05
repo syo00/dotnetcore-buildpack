@@ -63,6 +63,9 @@ ln -s ${BUILD_DIR}/dotnet /app
 export PATH="/app/dotnet:${PATH}"
 echo "export: PATH+=/app/dotnet"
 
+export CORECLR_VERSION="1.0.1"
+echo "export: CORECLR_VERSION=1.0.1"
+
 mkdir -p ${BUILD_DIR}/.profile.d
 cp -n ${BUILDPACK_DIR}/.profile.d/* ${BUILD_DIR}/.profile.d/
 
