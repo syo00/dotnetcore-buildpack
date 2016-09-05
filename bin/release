@@ -3,5 +3,5 @@ cat << EOF
 ---
 config_vars:
   CORECLR_VERSION: 1.0.1
-  CORECLR_DIR: /app/dotnet/Microsoft.NETCore.App/1.0.1
+  CORECLR_DIR: /app/dotnet/Microsoft.NETCore.App/1.0.1 \
 EOF
