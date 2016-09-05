@@ -40,22 +40,6 @@ SRC_DIR=`mktemp -d`
 
 mkdir -p ${CACHE_DIR}
 
-# TODO: This test doesn't seen to actually work
-# TODO: Maybe just run `npm install -g` and if anything is missing, install it after
-if [[ -n $(find ${SRC_DIR} -type f -iname package.json -o -iname bower.json) ]]
-then
-	echo "Installing Node"
-	NODE_PATH=`mktemp -d`
-	curl https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz -Ls \
-		| tar xz -C ${NODE_PATH}
-	export PATH="${NODE_PATH}/node-v${NODE_VERSION}-linux-x64/bin:${PATH}"
-	echo "export: PATH=${NODE_PATH}/node-v${NODE_VERSION}-linux-x64/bin"
-	echo "Installing bower"
-	if ! hash bower 2>/dev/null; then
-		npm install -g bower
-	fi
-fi
-
 # Install .NET Core
 echo "Get .NET Core Version and Channel from the PROJECT"
 DEPLOYMENT_FILE_LOCATION=${SRC_DIR}/.deployment
@@ -104,42 +88,8 @@ echo "export: PATH+=/app/dotnet"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
 echo "export: LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
 
-if [ -n "$PROJECT" ]; then
-	PROJECT_JSON_FILE=${SRC_DIR}/${PROJECT}
-	echo "Project file configured in PROJECT environment variable"
-elif [ -e ${DEPLOYMENT_FILE_LOCATION} ]; then
-	PROJECT_JSON_FILE=${SRC_DIR}/$(awk -F "=" '/project/ {print $2}' ${DEPLOYMENT_FILE_LOCATION} | tr -d ' ')
-	echo "Project file configured in .deployment file"
-else
-	PROJECT_JSON_FILES=$(find ${SRC_DIR}/. -maxdepth 5 -iname "project.json")
-	printf 'Found %s project.json files\n' $(echo "$PROJECT_JSON_FILES" | wc -l | tr -d ' ')
-	PROJECT_JSON_FILE=$(echo "$PROJECT_JSON_FILES" | head -1)
-	PROJECT_JSON_FILE=$(readlink -m $PROJECT_JSON_FILES)
-fi
-echo "Building ${PROJECT_JSON_FILE}"
-
-PROJECT_DIR="$PROJECT_JSON_FILE"
-if [[ -f $PROJECT_JSON_FILE ]]; then
-	PROJECT_DIR=$(dirname $PROJECT_JSON_FILE)
-fi
-
-echo "Reading App Name from project.json"
-PROJECT_DIR_NAME=$(basename $PROJECT_DIR)
-PROJECT_NAME=$(ruby -rjson -e "j = JSON.parse(File.open('${PROJECT_DIR}/project.json','r:bom|utf-8').read); unless j['buildOptions'].nil? ; puts j['buildOptions']['outputName'];end")
-echo "${PROJECT_NAME:=$PROJECT_DIR_NAME}"
-
 echo "Restoring the packages"
 dotnet restore ${SRC_DIR}
-
-# configure some npm command during building
-export PATH="${PROJECT_DIR}/node_modules/.bin:${PATH}"
-echo "export: PATH+=${PROJECT_DIR}/node_modules/.bin"
-
-echo "Publishing the app"
-# Publish to heroku_output
-dotnet publish ${PROJECT_JSON_FILE} --output ${BUILD_DIR}/heroku_output --configuration ${CORE_CONFIGURATION}
-
-echo "Publish Successed"
 
 mkdir -p ${BUILD_DIR}/.profile.d
 cp -n ${BUILDPACK_DIR}/.profile.d/* ${BUILD_DIR}/.profile.d/
