@@ -62,5 +62,5 @@ ln -s ${BUILD_DIR}/dotnet /app
 
 export PATH="/app/dotnet:${PATH}"
 echo "export: PATH+=/app/dotnet"
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
-echo "export: LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+
+echo "dotnetcore-heroku finished!"
