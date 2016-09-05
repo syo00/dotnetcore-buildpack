@@ -8,11 +8,17 @@ if [ $STACK != "cedar-14" ]; then
 	echo "Stack ${STACK} not supported" && exit 1
 fi
 
+echo "Starting dotnetcore-heroku..."
+
 BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
 # This is where the buildpack is stored
 BUILDPACK_DIR=`cd $(dirname $0); cd ..; pwd`
+
+echo "BUILD_DIR=${BUILD_DIR}"
+echo "CACHE_DIR=${CACHE_DIR}"
+echo "ENV_DIR=${ENV_DIR}"
 
 source $BUILDPACK_DIR/bin/util
 
@@ -45,8 +51,8 @@ fi
 # latest version may be http://dotnetcli.blob.core.windows.net/dotnet/dev/Binaries/1.0.1.001698/dotnet-ubuntu-x64.1.0.1.001698.tar.gz
 : ${CORE_DOWNLOAD_LOCATION:="https://dotnetcli.blob.core.windows.net/dotnet/${CORE_CHANNEL}/Binaries/${CORE_VERSION_FIRST}/dotnet-dev-ubuntu-x64.${CORE_VERSION}.tar.gz"}
 
-echo "Installing the dependencies"
-apt_install libunwind8 gettext
+#echo "Installing the dependencies"
+#apt_install libunwind8 gettext
 
 mkdir -p ${BUILD_DIR}/dotnet
 
@@ -58,9 +64,3 @@ export PATH="/app/dotnet:${PATH}"
 echo "export: PATH+=/app/dotnet"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
 echo "export: LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
-
-echo "Restoring the packages"
-dotnet restore ${SRC_DIR}
-
-mkdir -p ${BUILD_DIR}/.profile.d
-cp -n ${BUILDPACK_DIR}/.profile.d/* ${BUILD_DIR}/.profile.d/
