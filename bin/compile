@@ -58,7 +58,7 @@ mkdir -p ${BUILD_DIR}/dotnet
 
 echo "Installing .NET CORE ${CORE_VERSION} from ${CORE_DOWNLOAD_LOCATION}"
 curl ${CORE_DOWNLOAD_LOCATION} -Ls | tar xz -C ${BUILD_DIR}/dotnet
-ln -s ${BUILD_DIR}/dotnet /app
+cp ${BUILD_DIR}/dotnet /app
 
 export PATH="/app/dotnet:${PATH}"
 echo "export: PATH+=/app/dotnet"
