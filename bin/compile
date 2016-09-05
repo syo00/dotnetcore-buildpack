@@ -19,7 +19,6 @@ source $BUILDPACK_DIR/bin/util
 export_env_dir ${ENV_DIR}
 
 : ${CORE_VERSION:="latest"}
-: ${CORE_SCRIPT_LOCATION:="https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh"}
 : ${NODE_VERSION:="4.4.4"}
 : ${CORE_VERSION:="latest"}
 : ${CORE_CHANNEL:="preview"}
@@ -50,6 +49,7 @@ then
 	curl https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz -Ls \
 		| tar xz -C ${NODE_PATH}
 	export PATH="${NODE_PATH}/node-v${NODE_VERSION}-linux-x64/bin:${PATH}"
+	echo "export: PATH=${NODE_PATH}/node-v${NODE_VERSION}-linux-x64/bin"
 	echo "Installing bower"
 	if ! hash bower 2>/dev/null; then
 		npm install -g bower
@@ -87,6 +87,7 @@ if [[ "${CORE_VERSION}" == "latest" ]]; then
 	CORE_VERSION_FIRST="Latest"
 fi
 
+# latest version may be http://dotnetcli.blob.core.windows.net/dotnet/dev/Binaries/1.0.1.001698/dotnet-ubuntu-x64.1.0.1.001698.tar.gz
 : ${CORE_DOWNLOAD_LOCATION:="https://dotnetcli.blob.core.windows.net/dotnet/${CORE_CHANNEL}/Binaries/${CORE_VERSION_FIRST}/dotnet-dev-ubuntu-x64.${CORE_VERSION}.tar.gz"}
 
 echo "Installing the dependencies"
@@ -95,13 +96,13 @@ apt_install libunwind8 gettext
 mkdir -p ${BUILD_DIR}/dotnet
 
 echo "Installing .NET CORE ${CORE_VERSION} from ${CORE_DOWNLOAD_LOCATION}"
-# dotnet-install.sh using `ldconfig` which search pkg in `/lib` or `/usr/lib`. So I change it to binaries.
-#curl -sSL ${CORE_SCRIPT_LOCATION} | bash /dev/stdin --version ${CORE_VERSION} --install-dir ${BUILD_DIR}/dotnet
 curl ${CORE_DOWNLOAD_LOCATION} -Ls | tar xz -C ${BUILD_DIR}/dotnet
 ln -s ${BUILD_DIR}/dotnet /app
 
 export PATH="/app/dotnet:${PATH}"
+echo "export: PATH+=/app/dotnet"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
+echo "export: LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
 
 if [ -n "$PROJECT" ]; then
 	PROJECT_JSON_FILE=${SRC_DIR}/${PROJECT}
@@ -132,6 +133,7 @@ dotnet restore ${SRC_DIR}
 
 # configure some npm command during building
 export PATH="${PROJECT_DIR}/node_modules/.bin:${PATH}"
+echo "export: PATH+=${PROJECT_DIR}/node_modules/.bin"
 
 echo "Publishing the app"
 # Publish to heroku_output
@@ -141,11 +143,3 @@ echo "Publish Successed"
 
 mkdir -p ${BUILD_DIR}/.profile.d
 cp -n ${BUILDPACK_DIR}/.profile.d/* ${BUILD_DIR}/.profile.d/
-
-if [ -e ${SRC_DIR}/Procfile ]; then
-	cp ${SRC_DIR}/Procfile ${BUILD_DIR}
-else
-	cat << EOT >> ${BUILD_DIR}/Procfile
-web: cd \$HOME/heroku_output && dotnet ./${PROJECT_NAME}.dll --server.urls http://+:\$PORT ${CORE_ENVIRONMENT}
-EOT
-fi
