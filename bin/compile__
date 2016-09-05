@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir>
+
+# fail fast
+set -e
+
+if [ $STACK != "cedar-14" ]; then
+	echo "Stack ${STACK} not supported" && exit 1
+fi
+
+echo "Starting dotnetcore-heroku..."
+
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+# This is where the buildpack is stored
+BUILDPACK_DIR=`cd $(dirname $0); cd ..; pwd`
+
+source $BUILDPACK_DIR/bin/util
+
+export_env_dir ${ENV_DIR}
+
+mkdir -p ${CACHE_DIR}
+
+# Install mono
+: ${MONO_DOWNLOAD_LOCATION:="https://github.com/friism/mono-builder/releases/download/v4.0.1.44/mono-4.0.1.44.tar.gz"}
+
+#echo "Installing the dependencies"
+#apt_install libunwind8 gettext
+
+mkdir -p ${BUILD_DIR}/mono
+
+echo "Installing mono from ${MONO_DOWNLOAD_LOCATION}"
+curl ${MONO_DOWNLOAD_LOCATION} -Ls | tar xz -C ${BUILD_DIR}
+ln -s ${BUILD_DIR}/mono /app
+
+export PATH="/app/mono/bin:${PATH}"
+export LD_LIBRARY_PATH="/app/mono/lib:${LD_LIBRARY_PATH}"
+
+mkdir -p ${BUILD_DIR}/.profile.d
+cp -n ${BUILDPACK_DIR}/.profile.d/* ${BUILD_DIR}/.profile.d/
+
+echo "dotnetcore-heroku finished!"
