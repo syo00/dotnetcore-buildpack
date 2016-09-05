@@ -58,7 +58,8 @@ mkdir -p ${BUILD_DIR}/dotnet
 
 echo "Installing .NET CORE ${CORE_VERSION} from ${CORE_DOWNLOAD_LOCATION}"
 curl ${CORE_DOWNLOAD_LOCATION} -Ls | tar xz -C ${BUILD_DIR}/dotnet
-cp -r ${BUILD_DIR}/dotnet /app
+ln -s ${BUILD_DIR}/dotnet /app
+# cp -r 
 
 mkdir -p ${BUILD_DIR}/.profile.d
 cp -n ${BUILDPACK_DIR}/.profile.d/* ${BUILD_DIR}/.profile.d/
