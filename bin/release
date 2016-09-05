@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+cat << EOF
+---
+config_vars:
+  CORECLR_VERSION: 1.0.1
+EOF
