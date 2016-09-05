@@ -13,6 +13,8 @@ echo "Starting dotnetcore-heroku..."
 BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
+# This is where the buildpack is stored
+BUILDPACK_DIR=`cd $(dirname $0); cd ..; pwd`
 
 source $BUILDPACK_DIR/bin/util
 
