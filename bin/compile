@@ -63,4 +63,7 @@ ln -s ${BUILD_DIR}/dotnet /app
 export PATH="/app/dotnet:${PATH}"
 echo "export: PATH+=/app/dotnet"
 
+mkdir -p ${BUILD_DIR}/.profile.d
+cp -n ${BUILDPACK_DIR}/.profile.d/* ${BUILD_DIR}/.profile.d/
+
 echo "dotnetcore-heroku finished!"
